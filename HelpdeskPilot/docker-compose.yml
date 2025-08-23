@@ -1,16 +1,38 @@
-version: '3.8'
-
 services:
   mongo:
-    image: mongo:6.0  # Using MongoDB version 6.0 for stability
+    image: mongo:6.0
     container_name: helpdeskpilot-mongo
     ports:
-      - "27017:27017"  # Maps container port to host
+      - "27017:27017"
     volumes:
-      - helpdeskpilot-mongo-data:/data/db  # Persists data
+      - helpdeskpilot-mongo-data:/data/db
     environment:
-      MONGO_INITDB_DATABASE: helpdeskpilot  # Creates initial DB
-    restart: unless-stopped  # Auto-restarts if it crashes
+      MONGO_INITDB_DATABASE: helpdeskpilot
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: helpdeskpilot-api
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=development
+      - MONGO_URI=mongodb://mongo:27017/helpdeskpilot
+      - PORT=8080
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    depends_on:
+      - mongo
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    restart: unless-stopped
 
 volumes:
-  helpdeskpilot-mongo-data:  # Named volume for data persistence
+  helpdeskpilot-mongo-data:

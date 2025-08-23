@@ -9,14 +9,19 @@ An end-to-end web app for support tickets with AI triage using MERN stack (Track
 - **Agentic Workflow**: Deterministic stub for LLM-like behavior.
 
 ## Setup Instructions
+
 ### Prerequisites
 - Docker and Docker Compose installed.
+- Node.js v20+ for local development.
 
 ### Running with Docker
-1. Copy `.env.example` to `.env` and update if needed.
-2. Run `docker compose up -d` to start MongoDB.
-3. Verify MongoDB: Connect via `mongodb://localhost:27017/helpdesk` using Compass or shell.
-4. Stop with `docker compose down`.
+1. Copy `.env.example` to `backend/.env` and update if needed.
+2. Run `docker compose up -d` to start MongoDB and API.
+3. Verify MongoDB: Connect via `mongodb://localhost:27017/helpdeskpilot` using Compass or shell.
+4. Verify API: Visit `http://localhost:8080/healthz` (should return {"status":"healthy","mongodb":"connected"}).
+5. Stop with `docker compose down`.
+
+(More instructions to be added in later phases)
 
 (More instructions to be added in later phases)
 

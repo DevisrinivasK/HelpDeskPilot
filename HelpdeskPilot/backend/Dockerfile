@@ -4,17 +4,17 @@ FROM node:20-alpine
 # Set working directory
 WORKDIR /app
 
-# Copy package files (to be added later)
-# COPY package*.json ./
+# Copy package files
+COPY package*.json ./
 
-# Install dependencies (to be run later)
-# RUN npm install
+# Install dependencies
+RUN npm install
 
-# Copy source code (to be added later)
-# COPY . .
+# Copy source code
+COPY . .
 
 # Expose port
 EXPOSE 8080
 
-# Command to run the app (placeholder)
-CMD ["echo", "Backend not yet implemented"]
+# Command to run the app
+CMD ["npm", "start"]
