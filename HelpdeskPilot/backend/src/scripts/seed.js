@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const User = require('../models/User');
 const Article = require('../models/Article');
 const Ticket = require('../models/Ticket');
+const bcrypt = require('bcrypt');
 
 const dotenv = require('dotenv');
 dotenv.config();
@@ -20,11 +21,11 @@ async function seedData() {
     await Article.deleteMany();
     await Ticket.deleteMany();
 
-    // Seed Users
+    // Seed Users with hashed passwords
     const users = await User.insertMany([
-      { name: 'Admin User', email: 'admin@example.com', password_hash: 'hashedpassword1', role: 'admin' },
-      { name: 'Agent User', email: 'agent@example.com', password_hash: 'hashedpassword2', role: 'agent' },
-      { name: 'Normal User', email: 'user@example.com', password_hash: 'hashedpassword3', role: 'user' }
+      { name: 'Admin User', email: 'admin@example.com', password_hash: await bcrypt.hash('password1', 10), role: 'admin' },
+      { name: 'Agent User', email: 'agent@example.com', password_hash: await bcrypt.hash('password2', 10), role: 'agent' },
+      { name: 'Normal User', email: 'user@example.com', password_hash: await bcrypt.hash('password3', 10), role: 'user' }
     ]);
 
     // Seed Articles

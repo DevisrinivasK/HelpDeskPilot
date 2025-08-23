@@ -2,10 +2,14 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const winston = require('winston');
+const authRoutes = require('./routes/auth');
 const app = express();
 
 // Load environment variables
 dotenv.config();
+
+// Middleware
+app.use(express.json());
 
 // Initialize logger
 const logger = winston.createLogger({
@@ -28,6 +32,9 @@ app.use((req, res, next) => {
   });
   next();
 });
+
+// Auth routes
+app.use('/api/auth', authRoutes);
 
 // Health check endpoint
 app.get('/healthz', async (req, res) => {
@@ -60,3 +67,5 @@ app.listen(PORT, async () => {
   logger.info(`Server running on port ${PORT}`);
   await connectWithRetry();
 });
+
+module.exports = app; // Export for testing if needed
