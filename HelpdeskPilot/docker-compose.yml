@@ -5,7 +5,7 @@ services:
     image: mongo:6.0  # Using MongoDB version 6.0 for stability
     container_name: helpdeskpilot-mongo
     ports:
-      - "27018:27017"  # Maps container port to host
+      - "27017:27017"  # Maps container port to host
     volumes:
       - helpdeskpilot-mongo-data:/data/db  # Persists data
     environment:
