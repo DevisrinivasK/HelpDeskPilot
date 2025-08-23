@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:6.0  # Using MongoDB version 6.0 for stability
+    container_name: helpdeskpilot-mongo
+    ports:
+      - "27018:27017"  # Maps container port to host
+    volumes:
+      - helpdeskpilot-mongo-data:/data/db  # Persists data
+    environment:
+      MONGO_INITDB_DATABASE: helpdeskpilot  # Creates initial DB
+    restart: unless-stopped  # Auto-restarts if it crashes
+
+volumes:
+  helpdeskpilot-mongo-data:  # Named volume for data persistence
