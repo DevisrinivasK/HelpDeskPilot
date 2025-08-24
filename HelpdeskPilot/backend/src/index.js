@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const winston = require('winston');
 const authRoutes = require('./routes/auth');
+const kbRoutes = require('./routes/kb');
 const app = express();
 
 // Load environment variables
@@ -35,6 +36,9 @@ app.use((req, res, next) => {
 
 // Auth routes
 app.use('/api/auth', authRoutes);
+
+// KB routes
+app.use('/api/kb', kbRoutes);
 
 // Health check endpoint
 app.get('/healthz', async (req, res) => {
