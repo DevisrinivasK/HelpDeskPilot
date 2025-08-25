@@ -35,9 +35,13 @@ app.use((req, res, next) => {
   next();
 });
 
-// Routes
+// Auth routes
 app.use('/api/auth', authRoutes);
+
+// KB routes
 app.use('/api/kb', kbRoutes);
+
+// Ticket routes
 app.use('/api/ticket', ticketRoutes);
 
 // Health check endpoint
