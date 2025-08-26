@@ -14,13 +14,13 @@ const llmStub = {
   classify: (text) => {
     let category = 'other';
     let confidence = 0.5;
-    if (text.includes('refund') || text.includes('invoice')) {
+    if (text.toLowerCase().includes('refund') || text.toLowerCase().includes('invoice')) {
       category = 'billing';
       confidence = 0.9;
-    } else if (text.includes('error') || text.includes('bug') || text.includes('stack')) {
+    } else if (text.toLowerCase().includes('error') || text.toLowerCase().includes('bug') || text.toLowerCase().includes('stack')) {
       category = 'tech';
       confidence = 0.8;
-    } else if (text.includes('delivery') || text.includes('shipment')) {
+    } else if (text.toLowerCase().includes('delivery') || text.toLowerCase().includes('shipment')) {
       category = 'shipping';
       confidence = 0.85;
     }
@@ -46,7 +46,7 @@ async function triageTicket(ticketId) {
   const { predictedCategory, confidence } = llmStub.classify(ticket.description);
   await logAudit(ticketId, traceId, 'system', 'AGENT_CLASSIFIED', { category: predictedCategory, confidence });
 
-  // Step 2: Retrieve KB (keyword search)
+  // Step 2: Retrieve KB
   const articles = await Article.find({
     $or: [
       { title: { $regex: predictedCategory, $options: 'i' } },
@@ -80,7 +80,7 @@ async function triageTicket(ticketId) {
     await logAudit(ticketId, traceId, 'system', 'AUTO_CLOSED', { confidence });
   } else {
     ticket.status = 'waiting_human';
-    ticket.assignee = null; // Assign to human later
+    ticket.assignee = null;
     await logAudit(ticketId, traceId, 'system', 'ASSIGNED_TO_HUMAN', { confidence });
   }
   ticket.agentSuggestionId = suggestion._id;

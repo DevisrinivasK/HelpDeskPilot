@@ -42,7 +42,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/kb', kbRoutes);
 
 // Ticket routes
-app.use('/api/ticket', ticketRoutes);
+app.use('/api/tickets', ticketRoutes);
 
 // Health check endpoint
 app.get('/healthz', async (req, res) => {

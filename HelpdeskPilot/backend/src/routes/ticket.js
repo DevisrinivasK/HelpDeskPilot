@@ -19,7 +19,7 @@ const replySchema = Joi.object({
   reply: Joi.string().required().min(5)
 });
 
-// GET /api/ticket (filter by status/my tickets) - authenticated
+// GET /api/tickets (filter by status/my tickets) - authenticated
 router.get('/', authMiddleware, async (req, res) => {
   try {
     const { status } = req.query;
@@ -31,27 +31,26 @@ router.get('/', authMiddleware, async (req, res) => {
     const tickets = await Ticket.find(filter).populate('createdBy', 'name').populate('assignee', 'name');
     res.json(tickets);
   } catch (error) {
-    console.error('Error in GET /api/ticket:', error.message, error.stack);
-    res.status(500).json({ message: 'Error fetching tickets', error: error.message });
+    res.status(500).json({ message: 'Error fetching tickets', error });
   }
 });
 
-// GET /api/ticket/:id - authenticated
+// GET /api/tickets/:id - authenticated
 router.get('/:id', authMiddleware, async (req, res) => {
   try {
     const ticket = await Ticket.findById(req.params.id).populate('createdBy', 'name').populate('assignee', 'name').populate('agentSuggestionId');
     if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
+    // Check access: owner, assignee, or admin/agent
     if (req.user.role !== 'admin' && req.user.role !== 'agent' && ticket.createdBy._id.toString() !== req.user.id && (ticket.assignee && ticket.assignee._id.toString() !== req.user.id)) {
       return res.status(403).json({ message: 'Insufficient permissions' });
     }
     res.json(ticket);
   } catch (error) {
-    console.error('Error in GET /api/ticket/:id:', error.message, error.stack);
-    res.status(500).json({ message: 'Error fetching ticket', error: error.message });
+    res.status(500).json({ message: 'Error fetching ticket', error });
   }
 });
 
-// POST /api/ticket (user)
+// POST /api/tickets (user)
 router.post('/', authMiddleware, roleMiddleware(['user']), async (req, res) => {
   try {
     const { error } = ticketSchema.validate(req.body);
@@ -70,12 +69,11 @@ router.post('/', authMiddleware, roleMiddleware(['user']), async (req, res) => {
 
     res.status(201).json(ticket);
   } catch (error) {
-    console.error('Error in POST /api/ticket:', error.message, error.stack);
-    res.status(500).json({ message: 'Error creating ticket', error: error.message });
+    res.status(500).json({ message: 'Error creating ticket', error });
   }
 });
 
-// POST /api/ticket/:id/reply (agent)
+// POST /api/tickets/:id/reply (agent) → change status
 router.post('/:id/reply', authMiddleware, roleMiddleware(['agent']), async (req, res) => {
   try {
     const { error } = replySchema.validate(req.body);
@@ -84,17 +82,18 @@ router.post('/:id/reply', authMiddleware, roleMiddleware(['agent']), async (req,
     const ticket = await Ticket.findById(req.params.id);
     if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
 
-    ticket.status = req.body.status || 'resolved';
+    // Simulate adding reply (e.g., update description or add field; here we just change status)
+    ticket.status = req.body.status || 'resolved'; // Allow status change in body if needed
+    // In real: add reply to a replies array, but simplified
     await ticket.save();
 
     res.json(ticket);
   } catch (error) {
-    console.error('Error in POST /api/ticket/:id/reply:', error.message, error.stack);
-    res.status(500).json({ message: 'Error adding reply', error: error.message });
+    res.status(500).json({ message: 'Error adding reply', error });
   }
 });
 
-// POST /api/ticket/:id/assign (admin/agent)
+// POST /api/tickets/:id/assign (admin/agent)
 router.post('/:id/assign', authMiddleware, roleMiddleware(['admin', 'agent']), async (req, res) => {
   try {
     const { assigneeId } = req.body;
@@ -102,24 +101,22 @@ router.post('/:id/assign', authMiddleware, roleMiddleware(['admin', 'agent']), a
     if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
 
     ticket.assignee = assigneeId;
-    ticket.status = 'triaged';
+    ticket.status = 'triaged'; // Or appropriate status
     await ticket.save();
 
     res.json(ticket);
   } catch (error) {
-    console.error('Error in POST /api/ticket/:id/assign:', error.message, error.stack);
-    res.status(500).json({ message: 'Error assigning ticket', error: error.message });
+    res.status(500).json({ message: 'Error assigning ticket', error });
   }
 });
 
-// GET /api/ticket/:id/audit - authenticated (for testing)
+// GET /api/tickets/:id/audit - authenticated (for testing)
 router.get('/:id/audit', authMiddleware, async (req, res) => {
   try {
     const logs = await AuditLog.find({ ticketId: req.params.id }).sort('timestamp');
     res.json(logs);
   } catch (error) {
-    console.error('Error in GET /api/ticket/:id/audit:', error.message, error.stack);
-    res.status(500).json({ message: 'Error fetching audit logs', error: error.message });
+    res.status(500).json({ message: 'Error fetching audit logs', error });
   }
 });
 
