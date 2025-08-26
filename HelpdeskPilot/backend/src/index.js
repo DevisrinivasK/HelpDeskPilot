@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const winston = require('winston');
+const cors = require('cors'); // Add CORS
 const authRoutes = require('./routes/auth');
 const kbRoutes = require('./routes/kb');
 const ticketRoutes = require('./routes/ticket');
@@ -11,6 +12,7 @@ const app = express();
 dotenv.config();
 
 // Middleware
+app.use(cors({ origin: 'http://localhost:5173' })); // Add CORS for frontend
 app.use(express.json());
 
 // Initialize logger
