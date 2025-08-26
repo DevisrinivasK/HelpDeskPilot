@@ -1,5 +1,3 @@
-
-
 services:
   mongo:
     image: mongo:6.0
@@ -23,6 +21,8 @@ services:
       - NODE_ENV=development
       - MONGO_URI=mongodb://mongo:27017/helpdeskpilot
       - PORT=8080
+      - JWT_SECRET=your-secure-jwt-secret-change-this
+      - STUB_MODE=true
     volumes:
       - ./backend:/app
       - /app/node_modules
@@ -41,6 +41,22 @@ services:
     command: npm run seed
     depends_on:
       - mongo
+
+  helpdeskpilot-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: helpdeskpilot-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://api:8080
+    depends_on:
+      - api
+    restart: unless-stopped
 
 volumes:
   helpdeskpilot-mongo-data:
