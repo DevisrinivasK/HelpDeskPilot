@@ -1,123 +1,61 @@
 const express = require('express');
-const router = express.Router();
-const Ticket = require('../models/Ticket');
-const AgentSuggestion = require('../models/AgentSuggestion');
-const AuditLog = require('../models/AuditLog');
-const { authMiddleware, roleMiddleware } = require('../middleware/auth');
-const Joi = require('joi');
-const { triageTicket } = require('../services/agent');
+     const router = express.Router();
+     const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+     const Ticket = require('../models/Ticket');
 
-// Validation schema for ticket creation
-const ticketSchema = Joi.object({
-  title: Joi.string().required().min(3),
-  description: Joi.string().required().min(10),
-  category: Joi.string().valid('billing', 'tech', 'shipping', 'other').optional()
-});
+     // Create a ticket (any authenticated user)
+     router.post('/', authMiddleware, async (req, res) => {
+       const { title, description, category } = req.body;
+       try {
+         const ticket = new Ticket({
+           title,
+           description,
+           category,
+           createdBy: req.user.id
+         });
+         await ticket.save();
+         // Trigger AI triage (from Phase 8)
+         const { triageTicket } = require('../agent');
+         await triageTicket(ticket);
+         res.status(201).json(ticket);
+       } catch (error) {
+         res.status(500).json({ message: `Failed to create ticket: ${error.message}` });
+       }
+     });
 
-// Validation schema for reply
-const replySchema = Joi.object({
-  reply: Joi.string().required().min(5)
-});
+     // Get all tickets (admin/agent only)
+     router.get('/', authMiddleware, roleMiddleware(['admin', 'agent']), async (req, res) => {
+       try {
+         const tickets = await Ticket.find().populate('createdBy', 'email name');
+         res.json(tickets);
+       } catch (error) {
+         res.status(500).json({ message: `Failed to fetch tickets: ${error.message}` });
+       }
+     });
 
-// GET /api/tickets (filter by status/my tickets) - authenticated
-router.get('/', authMiddleware, async (req, res) => {
-  try {
-    const { status } = req.query;
-    let filter = { createdBy: req.user.id }; // Default to my tickets for users
-    if (req.user.role === 'admin' || req.user.role === 'agent') {
-      filter = {}; // Admins/agents see all
-    }
-    if (status) filter.status = status;
-    const tickets = await Ticket.find(filter).populate('createdBy', 'name').populate('assignee', 'name');
-    res.json(tickets);
-  } catch (error) {
-    res.status(500).json({ message: 'Error fetching tickets', error });
-  }
-});
+     // Get ticket by ID (user-specific or admin/agent)
+     router.get('/:id', authMiddleware, async (req, res) => {
+       try {
+         const ticket = await Ticket.findById(req.params.id).populate('createdBy', 'email name');
+         if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
+         if (ticket.createdBy._id.toString() !== req.user.id && !['admin', 'agent'].includes(req.user.role)) {
+           return res.status(403).json({ message: 'Not authorized to view this ticket' });
+         }
+         res.json(ticket);
+       } catch (error) {
+         res.status(500).json({ message: `Failed to fetch ticket: ${error.message}` });
+       }
+     });
 
-// GET /api/tickets/:id - authenticated
-router.get('/:id', authMiddleware, async (req, res) => {
-  try {
-    const ticket = await Ticket.findById(req.params.id).populate('createdBy', 'name').populate('assignee', 'name').populate('agentSuggestionId');
-    if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
-    // Check access: owner, assignee, or admin/agent
-    if (req.user.role !== 'admin' && req.user.role !== 'agent' && ticket.createdBy._id.toString() !== req.user.id && (ticket.assignee && ticket.assignee._id.toString() !== req.user.id)) {
-      return res.status(403).json({ message: 'Insufficient permissions' });
-    }
-    res.json(ticket);
-  } catch (error) {
-    res.status(500).json({ message: 'Error fetching ticket', error });
-  }
-});
+     // Get audit logs (admin/agent only)
+     router.get('/:id/audit', authMiddleware, roleMiddleware(['admin', 'agent']), async (req, res) => {
+       try {
+         const ticket = await Ticket.findById(req.params.id);
+         if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
+         res.json(ticket.auditLogs || []);
+       } catch (error) {
+         res.status(500).json({ message: `Failed to fetch audit logs: ${error.message}` });
+       }
+     });
 
-// POST /api/tickets (user)
-router.post('/', authMiddleware, roleMiddleware(['user']), async (req, res) => {
-  try {
-    const { error } = ticketSchema.validate(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message });
-
-    const ticket = new Ticket({
-      ...req.body,
-      createdBy: req.user.id,
-      status: 'open',
-      category: req.body.category || 'other'
-    });
-    await ticket.save();
-
-    // Trigger triage
-    triageTicket(ticket._id).catch(error => console.error('Triage failed', error));
-
-    res.status(201).json(ticket);
-  } catch (error) {
-    res.status(500).json({ message: 'Error creating ticket', error });
-  }
-});
-
-// POST /api/tickets/:id/reply (agent) → change status
-router.post('/:id/reply', authMiddleware, roleMiddleware(['agent']), async (req, res) => {
-  try {
-    const { error } = replySchema.validate(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message });
-
-    const ticket = await Ticket.findById(req.params.id);
-    if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
-
-    // Simulate adding reply (e.g., update description or add field; here we just change status)
-    ticket.status = req.body.status || 'resolved'; // Allow status change in body if needed
-    // In real: add reply to a replies array, but simplified
-    await ticket.save();
-
-    res.json(ticket);
-  } catch (error) {
-    res.status(500).json({ message: 'Error adding reply', error });
-  }
-});
-
-// POST /api/tickets/:id/assign (admin/agent)
-router.post('/:id/assign', authMiddleware, roleMiddleware(['admin', 'agent']), async (req, res) => {
-  try {
-    const { assigneeId } = req.body;
-    const ticket = await Ticket.findById(req.params.id);
-    if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
-
-    ticket.assignee = assigneeId;
-    ticket.status = 'triaged'; // Or appropriate status
-    await ticket.save();
-
-    res.json(ticket);
-  } catch (error) {
-    res.status(500).json({ message: 'Error assigning ticket', error });
-  }
-});
-
-// GET /api/tickets/:id/audit - authenticated (for testing)
-router.get('/:id/audit', authMiddleware, async (req, res) => {
-  try {
-    const logs = await AuditLog.find({ ticketId: req.params.id }).sort('timestamp');
-    res.json(logs);
-  } catch (error) {
-    res.status(500).json({ message: 'Error fetching audit logs', error });
-  }
-});
-
-module.exports = router;
+     module.exports = router;
