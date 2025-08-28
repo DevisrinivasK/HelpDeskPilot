@@ -14,9 +14,9 @@ const express = require('express');
            createdBy: req.user.id
          });
          await ticket.save();
-         // Trigger AI triage (from Phase 8)
-         const { triageTicket } = require('../agent');
-         await triageTicket(ticket);
+         // Trigger AI triage
+         const { triageTicket } = require('../services/agent');
+         await triageTicket(ticket._id);
          res.status(201).json(ticket);
        } catch (error) {
          res.status(500).json({ message: `Failed to create ticket: ${error.message}` });
@@ -50,7 +50,7 @@ const express = require('express');
      // Get audit logs (admin/agent only)
      router.get('/:id/audit', authMiddleware, roleMiddleware(['admin', 'agent']), async (req, res) => {
        try {
-         const ticket = await Ticket.findById(req.params.id);
+         const ticket = await Ticket.findById(req.params.id).populate('auditLogs');
          if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
          res.json(ticket.auditLogs || []);
        } catch (error) {
