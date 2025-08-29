@@ -2,17 +2,27 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const winston = require('winston');
-const cors = require('cors'); // Add CORS
+const cors = require('cors');
+const http = require('http');
+const { Server } = require('socket.io');
 const authRoutes = require('./routes/auth');
 const kbRoutes = require('./routes/kb');
 const ticketRoutes = require('./routes/ticket');
+
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: { origin: 'http://localhost:5173', methods: ['GET', 'POST'] }
+});
+
+// Set Socket.IO instance for routes
+app.set('socketio', io);
 
 // Load environment variables
 dotenv.config();
 
 // Middleware
-app.use(cors({ origin: 'http://localhost:5173' })); // Add CORS for frontend
+app.use(cors({ origin: 'http://localhost:5173' }));
 app.use(express.json());
 
 // Initialize logger
@@ -35,6 +45,12 @@ app.use((req, res, next) => {
     timestamp: new Date().toISOString()
   });
   next();
+});
+
+// Socket.IO connection
+io.on('connection', (socket) => {
+  logger.info('Client connected:', { socketId: socket.id });
+  socket.on('disconnect', () => logger.info('Client disconnected:', { socketId: socket.id }));
 });
 
 // Auth routes
@@ -67,15 +83,15 @@ const connectWithRetry = async () => {
     logger.info('Connected to MongoDB');
   } catch (error) {
     logger.error('MongoDB connection failed', { error });
-    setTimeout(connectWithRetry, 5000); // Retry after 5 seconds
+    setTimeout(connectWithRetry, 5000);
   }
 };
 
 // Start server
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, async () => {
+server.listen(PORT, async () => {
   logger.info(`Server running on port ${PORT}`);
   await connectWithRetry();
 });
 
-module.exports = app; // Export for testing if needed
+module.exports = app;

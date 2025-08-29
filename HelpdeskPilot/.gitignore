@@ -1,17 +1,60 @@
-# Node modules
-node_modules/
+ node_modules/
+ npm-debug.log
+ *.log
 
-# Environment variables
-.env
+ # Environment files
+ backend/.env
+ *.env.local
+ *.env.development.local
+ *.env.test.local
+ *.env.production.local
 
-# Docker volumes (to avoid committing data)
-*.db
-*.log
+ # Docker
+ docker-compose.yml.bak
+ *.dockerignore
 
-# Build artifacts
-dist/
-build/
+ # Build outputs
+ backend/dist/
+ frontend/dist/
+ frontend/.vite/
 
-# OS files
-.DS_Store
-Thumbs.db
+ # OS files
+ .DS_Store
+ Thumbs.db
+ desktop.ini
+
+ # Extraneous directories and files
+ ../AIDiscovery/
+ ../CapCut.lnk
+ ../Certifications/
+ ../CodeGuide/
+ ../Code_Guide/
+ ../CodeguideAI.zip
+ ../CodeguideAI/
+ ../DBeaver.lnk
+ ../Devisrinivas - Chrome.lnk
+ ../Devisrinivas Kandikattu - Chrome.lnk
+ ../Docker Desktop.lnk
+ ../HTTrack Website Copier.lnk
+ ../HelpDeskAI/
+ ../IDProofs/
+ ../IEEE documents/
+ ../Interview Prep/
+ ../Java - The Complete Reference - 11 Edition.pdf
+ ../MongoDB Compass.lnk
+ ../Placement prep/
+ ../Postman.lnk
+ ../Projects/
+ ../Resumes/
+ ../SQL Practice/
+ ../SchoolManagementSystem/
+ ../SmartHelpdeskNew/
+ ../Smart__Helpdesk/
+ ../TurboVPN.lnk
+ ../Visual Studio Code.lnk
+ ../college/
+ ../eDEX-UI.lnk
+ ../fav/
+ ../myselfuu.jpg
+ ../uTorrent Web.lnk
+ ../~$*.*
