@@ -27,7 +27,7 @@ const TicketList = () => {
         setError(response.data.length === 0 ? 'No tickets found' : '');
       } catch (err) {
         const message = err.response?.data?.message || err.message;
-        setError(`Failed to fetch tickets: ${message.includes('Network Error') ? 'Cannot reach server. Check if backend is running.' : message}`);
+        setError(`Failed to fetch tickets: ${message.includes('Network Error') ? 'Cannot reach server.' : message}`);
         console.error('Fetch tickets error:', err);
       }
     };
@@ -67,7 +67,7 @@ const TicketList = () => {
       }
       const token = localStorage.getItem('token');
       if (!token) {
-        setError('No authentication token found. Please log in.');
+        setError('No authentication ticket found. Please log in.');
         navigate('/login');
         return;
       }
@@ -89,95 +89,92 @@ const TicketList = () => {
   };
 
   return (
-    <div className="container mx-auto p-4 max-w-4xl">
-      <h2 className="text-2xl font-bold mb-4 text-center md:text-3xl">Tickets</h2>
-      {error && <p className="text-red-500 text-sm mb-4 text-center" role="alert">{error}</p>}
-      <Button
-        className="mb-4 w-full sm:w-auto"
-        onClick={() => setShowCreateForm(!showCreateForm)}
-        aria-label={showCreateForm ? 'Cancel ticket creation' : 'Create new ticket'}
-      >
-        {showCreateForm ? 'Cancel' : 'Create New Ticket'}
-      </Button>
-      {showCreateForm && (
-        <form onSubmit={handleCreateTicket} className="bg-white p-4 rounded shadow-md border border-gray-200 mb-4">
-          <div className="mb-4">
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700">Title</label>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 'calc(100vh - 2rem)', padding: '1rem', position: 'relative' }}>
+      <div style={{ background: 'white', borderRadius: '0.75rem', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', maxWidth: '48rem', width: '100%', padding: '1.5rem', position: 'relative', zIndex: 10 }}>
+        <h2 style={{ fontSize: '1.875rem', fontWeight: 'bold', color: 'white', background: 'linear-gradient(to right, #1e3a8a, #4c1d95)', padding: '1rem', borderRadius: '0.5rem 0.5rem 0 0', textAlign: 'center', marginBottom: '1.5rem' }}>Tickets</h2>
+        {error && <p style={{ color: '#ef4444', fontSize: '0.875rem', marginBottom: '1rem', textAlign: 'center' }} role="alert">{error}</p>}
+        <Button
+          onClick={() => setShowCreateForm(!showCreateForm)}
+          style={{ width: '100%', maxWidth: '15rem', margin: '0 auto 1rem auto', display: 'block' }}
+        >
+          {showCreateForm ? 'Cancel' : 'Create New Ticket'}
+        </Button>
+        {showCreateForm && (
+          <form onSubmit={handleCreateTicket} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
             <input
-              id="title"
               type="text"
               value={newTicket.title}
               onChange={(e) => setNewTicket({ ...newTicket, title: e.target.value })}
-              className="w-full border rounded p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              placeholder="Enter ticket title"
+              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', background: 'white', fontSize: '0.875rem', color: '#374151', outline: 'none', transition: 'border-color 0.2s, box-shadow 0.2s' }}
+              placeholder="Title"
               required
               aria-label="Ticket title"
+              onFocus={(e) => { e.target.style.borderColor = '#93c5fd'; e.target.style.boxShadow = '0 0 0 2px #93c5fd'; }}
+              onBlur={(e) => { e.target.style.borderColor = '#d1d5db'; e.target.style.boxShadow = 'none'; }}
             />
-          </div>
-          <div className="mb-4">
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700">Description</label>
             <textarea
-              id="description"
               value={newTicket.description}
               onChange={(e) => setNewTicket({ ...newTicket, description: e.target.value })}
-              className="w-full border rounded p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              placeholder="Enter ticket description"
+              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', background: 'white', fontSize: '0.875rem', color: '#374151', outline: 'none', transition: 'border-color 0.2s, box-shadow 0.2s' }}
+              placeholder="Description"
               rows="4"
               required
               aria-label="Ticket description"
+              onFocus={(e) => { e.target.style.borderColor = '#93c5fd'; e.target.style.boxShadow = '0 0 0 2px #93c5fd'; }}
+              onBlur={(e) => { e.target.style.borderColor = '#d1d5db'; e.target.style.boxShadow = 'none'; }}
             />
-          </div>
-          <div className="mb-4">
-            <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
             <select
-              id="category"
               value={newTicket.category}
               onChange={(e) => setNewTicket({ ...newTicket, category: e.target.value })}
-              className="w-full border rounded p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', background: 'white', fontSize: '0.875rem', color: '#374151', outline: 'none', transition: 'border-color 0.2s, box-shadow 0.2s' }}
               required
               aria-label="Ticket category"
+              onFocus={(e) => { e.target.style.borderColor = '#93c5fd'; e.target.style.boxShadow = '0 0 0 2px #93c5fd'; }}
+              onBlur={(e) => { e.target.style.borderColor = '#d1d5db'; e.target.style.boxShadow = 'none'; }}
             >
               <option value="">Select a category</option>
               <option value="billing">Billing</option>
               <option value="technical">Technical</option>
               <option value="account">Account</option>
             </select>
-          </div>
-          <Button type="submit" className="w-full">
-            Create Ticket
-          </Button>
-        </form>
-      )}
-      {tickets.length === 0 && !error && <p className="text-gray-600 text-center">No tickets available</p>}
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        {tickets.map(ticket => (
-          <div key={ticket._id} className="bg-white p-4 rounded shadow-md border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-800">{ticket.title}</h3>
-            <p className="text-gray-600 text-sm mt-1">{ticket.description}</p>
-            <p className="text-sm mt-1">Status: {ticket.status}</p>
-            <p className="text-sm">Category: {ticket.category}</p>
             <Button
-              className="mt-2 w-full"
-              onClick={() => navigate(`/tickets/${ticket._id}`)}
-              aria-label={`View details for ticket ${ticket.title}`}
+              type="submit"
+              style={{ width: '100%', maxWidth: '15rem', margin: '0 auto', display: 'block' }}
             >
-              View Details
+              Create Ticket
             </Button>
-            {localStorage.getItem('role') !== 'user' && (
-              <select
-                className="mt-2 w-full border rounded p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                value={ticket.status}
-                onChange={(e) => handleStatusUpdate(ticket._id, e.target.value)}
-                aria-label={`Update status for ticket ${ticket.title}`}
+          </form>
+        )}
+        <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fill, minmax(15rem, 1fr))' }}>
+          {tickets.map(ticket => (
+            <div key={ticket._id} style={{ background: 'white', borderRadius: '0.375rem', padding: '1rem', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)' }}>
+              <h3 style={{ fontSize: '1.125rem', fontWeight: 'bold', color: '#1e3a8a', marginBottom: '0.5rem' }}>{ticket.title}</h3>
+              <p style={{ fontSize: '0.875rem', color: '#374151', marginBottom: '0.5rem' }}>{ticket.description}</p>
+              <p style={{ fontSize: '0.875rem', color: '#6b7280' }}>Status: {ticket.status}</p>
+              <p style={{ fontSize: '0.875rem', color: '#6b7280' }}>Category: {ticket.category}</p>
+              <Button
+                onClick={() => navigate(`/tickets/${ticket._id}`)}
+                style={{ width: '100%', marginTop: '0.75rem' }}
               >
-                <option value="open">Open</option>
-                <option value="in_progress">In Progress</option>
-                <option value="resolved">Resolved</option>
-                <option value="waiting_human">Waiting Human</option>
-              </select>
-            )}
-          </div>
-        ))}
+                View Details
+              </Button>
+              {localStorage.getItem('role') !== 'user' && (
+                <select
+                  value={ticket.status}
+                  onChange={(e) => handleStatusUpdate(ticket._id, e.target.value)}
+                  style={{ width: '100%', padding: '0.5rem', marginTop: '0.75rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', background: 'white', fontSize: '0.875rem', color: '#374151', outline: 'none', transition: 'border-color 0.2s, box-shadow 0.2s' }}
+                  onFocus={(e) => { e.target.style.borderColor = '#93c5fd'; e.target.style.boxShadow = '0 0 0 2px #93c5fd'; }}
+                  onBlur={(e) => { e.target.style.borderColor = '#d1d5db'; e.target.style.boxShadow = 'none'; }}
+                >
+                  <option value="open">Open</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="resolved">Resolved</option>
+                  <option value="waiting_human">Waiting Human</option>
+                </select>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
