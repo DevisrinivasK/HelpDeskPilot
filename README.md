@@ -17,7 +17,7 @@
 - [Contributors / License](#contributors--license)
 
 ## Introduction
-Smart Helpdesk is a modern, Dockerized helpdesk application built with the MERN stack (MongoDB, Express.js, React, Node.js). It provides user authentication, knowledge base (KB) management, ticket management with role-based access control (RBAC) for users, agents, and admins, and an agentic triage workflow for automated ticket processing. Designed for local development and testing, it leverages Docker Compose for a seamless, containerized environment.
+Helpdesk Pilot is a modern, Dockerized helpdesk application built with the MERN stack (MongoDB, Express.js, React, Node.js). It provides user authentication, knowledge base (KB) management, ticket management with role-based access control (RBAC) for users, agents, and admins, and an agentic triage workflow for automated ticket processing. Designed for local development and testing, it leverages Docker Compose for a seamless, containerized environment.
 
 ## Features
 - **User Authentication**: Secure login with JWT and bcrypt for users, agents, and admins.
